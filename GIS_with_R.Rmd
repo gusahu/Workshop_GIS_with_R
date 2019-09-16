@@ -1,0 +1,118 @@
+---
+title: "Empleando R como Sistema de Información Geográfica (SIG)"
+author: "Gustavo Ahumada"
+date: "Sept 13, 2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# 1. Representación simple de datos espaciales
+
+Los objetos espaciales usualmente son representados por datos tipo vector. Tales tipos de datos consisten en la geometría o la forma de los objetos. Por ejemplo, un conjunto de datos vector que contienen el limite de los paises del mundo (geometría) y también contienen su respectivo tamaño poblacional para el año 2010. Por otra parte, se tienen los datos espaciales continuos, los cuales son frecuentemente representados con datos tipo raster. A continuación se representante este tipo de datos utilizando R. Parte del codigo que será utilizado en esta sección está disponible en https://rspatial.org/spatial/index.html.
+
+## 1.1. Datos tipo vector
+
+
+```{r}
+# cargar librerias 
+library(pacman)
+pacman::p_load(raster, sf, maptools, rgdal, ggplot2, tidyverse, broom)
+```
+
+
+```{r}
+# Creación de 10 estaciones climaticas (llamadas de A a J)
+nombre <- LETTERS[1:10]
+longitud <- c(-116.7, -120.4, -116.7, -113.5, -115.5,
+              -120.8, -119.5, -113.7, -113.7, -110.7)
+latitud <- c(45.3, 42.6, 38.9, 42.1, 35.7, 38.9,
+             36.2, 39, 41.6, 36.9)
+est_climatic<- cbind(longitud, latitud)
+# Simulación de datos de lluvia
+set.seed(0)
+precip <-round((runif(length(latitud))*10)^3)
+```
+
+
+```{r}
+nivel_precip <- 1 + precip/500
+{plot(est_climatic, cex=nivel_precip, pch=20, col='blue', main='Precitación por estaciones')
+# adicionar etiquetas
+text.default(est_climatic, nombre, pos = 4)
+# adicionar leyenda
+breaks <- c(100, 250, 500, 1000)
+legend.psize <- 1+breaks/500 
+legend("topright", legend=breaks, pch=20, pt.cex=legend.psize, col='blue', bg='gray')}
+```
+
+
+```{r}
+# Adicionar puntos, lineas y polígonos al plot.
+{longitud <- c(-116.7, -120.4, -116.7, -113.5, -115.5,
+              -120.8, -119.5, -113.7, -113.7, -110.7)
+latitud <- c(45.3, 42.6, 38.9, 42.1, 35.7, 38.9,
+             36.2, 39, 41.6, 36.9)
+x <- cbind(longitud, latitud)
+plot(est_climatic, main='Precipitación por estaciones')
+polygon(x, col='blue', border='light blue')
+lines(est_climatic, lwd=3, col='red')
+points(x, cex=2, pch=20)
+points(est_climatic, cex=nivel_precip, pch=20, col='red', main='Precipitation by station')}
+```
+
+
+```{r}
+# Tabla de datos
+tabla <- data.frame(longitud, latitud, nombre, precip)
+tabla
+```
+
+
+## 1.2. Datos tipo raster
+
+
+```{r}
+# Crear un esqueleto de una base de datos raster
+rast <- raster(ncol=10, nrow=10, xmx=-80, xmn=-150, ymn=20, ymx=60)
+rast
+```
+
+
+```{r}
+# Asignar valores a objetos tipo raster
+values(rast) <- runif(ncell(rast))
+rast
+```
+
+
+```{r}
+# Podemos asignar el número de celdas 
+values(rast) <- 1:ncell(rast)
+rast
+plot(rast)
+```
+
+
+```{r}
+# Podemos crear un esqueleto de una base de datos raster
+{rast <- raster(ncol=10, nrow=10, xmx=-80, xmn=-150, ymn=20, ymx=60)
+rast
+# asignar valores a objetos tipo raster
+values(rast) <- runif(ncell(rast))
+rast
+# podemos asignar el número de celdas 
+values(rast) <- 1:ncell(rast)
+rast
+# plottear objeto tipo raster
+plot(rast)
+# adicionar puntos y poligonos
+longitud <- c(-116.8, -114.2, -112.9, -111.9, -114.2, -115.4, -117.7)
+latitud <- c(41.3, 42.9, 42.4, 39.8, 37.6, 38.3, 37.6)
+lonlat <- cbind(longitud, latitud)
+pols <- spPolygons(lonlat, crs='+proj=longlat +datum=WGS84')
+points(lonlat, col='red', pch=20, cex=3)
+plot(pols, border='blue', lwd=2, add=TRUE)}
+```
+
+
