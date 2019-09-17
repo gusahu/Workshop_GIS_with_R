@@ -15,7 +15,7 @@ Los objetos espaciales usualmente son representados por datos tipo vector. Tales
 
 
 ```{r}
-# cargar librerias 
+# Cargar librerias 
 library(pacman)
 pacman::p_load(raster, sf, maptools, rgdal, ggplot2, tidyverse, broom)
 ```
@@ -29,7 +29,7 @@ longitud <- c(-116.7, -120.4, -116.7, -113.5, -115.5,
 latitud <- c(45.3, 42.6, 38.9, 42.1, 35.7, 38.9,
              36.2, 39, 41.6, 36.9)
 est_climatic<- cbind(longitud, latitud)
-# Simulación de datos de lluvia
+# Simulación de datos de precipitación
 set.seed(0)
 precip <-round((runif(length(latitud))*10)^3)
 ```
@@ -38,9 +38,9 @@ precip <-round((runif(length(latitud))*10)^3)
 ```{r}
 nivel_precip <- 1 + precip/500
 {plot(est_climatic, cex=nivel_precip, pch=20, col='blue', main='Precitación por estaciones')
-# adicionar etiquetas
+# Adicionar etiquetas
 text.default(est_climatic, nombre, pos = 4)
-# adicionar leyenda
+# Adicionar leyenda
 breaks <- c(100, 250, 500, 1000)
 legend.psize <- 1+breaks/500 
 legend("topright", legend=breaks, pch=20, pt.cex=legend.psize, col='blue', bg='gray')}
@@ -73,7 +73,7 @@ tabla
 
 
 ```{r}
-# Crear un esqueleto de una base de datos raster
+# Crear esqueleto de una base de datos raster
 rast <- raster(ncol=10, nrow=10, xmx=-80, xmn=-150, ymn=20, ymx=60)
 rast
 ```
@@ -87,7 +87,7 @@ rast
 
 
 ```{r}
-# Podemos asignar el número de celdas 
+# Asignar el número de celdas 
 values(rast) <- 1:ncell(rast)
 rast
 plot(rast)
@@ -95,18 +95,18 @@ plot(rast)
 
 
 ```{r}
-# Podemos crear un esqueleto de una base de datos raster
+# Crear un esqueleto de una base de datos raster
 {rast <- raster(ncol=10, nrow=10, xmx=-80, xmn=-150, ymn=20, ymx=60)
 rast
-# asignar valores a objetos tipo raster
+# Asignar valores a objetos tipo raster
 values(rast) <- runif(ncell(rast))
 rast
-# podemos asignar el número de celdas 
+# Asignar el número de celdas 
 values(rast) <- 1:ncell(rast)
 rast
-# plottear objeto tipo raster
+# Plottear objeto tipo raster
 plot(rast)
-# adicionar puntos y poligonos
+# Adicionar puntos y poligonos
 longitud <- c(-116.8, -114.2, -112.9, -111.9, -114.2, -115.4, -117.7)
 latitud <- c(41.3, 42.9, 42.4, 39.8, 37.6, 38.3, 37.6)
 lonlat <- cbind(longitud, latitud)
@@ -114,5 +114,167 @@ pols <- spPolygons(lonlat, crs='+proj=longlat +datum=WGS84')
 points(lonlat, col='red', pch=20, cex=3)
 plot(pols, border='blue', lwd=2, add=TRUE)}
 ```
+
+
+# 2. Datos de vectores geográficos en R
+
+
+```{r setup}
+# Definir directorio de trabajo
+# en Windows sería algo a esto setwd("C:/Users/gusahu/Google Drive/Workshop_socher/Section_II")
+knitr::opts_knit$set(root.dir = '/Users/gusahu/Google Drive/Workshop_GIS_with_R/Section_II')
+```
+
+
+```{r}
+# Cargar librerias
+library(pacman)
+pacman::p_load(raster, rgdal, rgeos, tidyverse, stringr, sf)
+```
+
+```{r}
+# Limpiar ambiente de trabajo
+g <- gc(reset = TRUE)
+rm(list = ls())
+options(scipen = 999)
+```
+
+
+```{r}
+# Importar archivos shape (archivos tipo vector)
+mps <- shapefile('./data/mpios_geo_ok2.shp')
+```
+
+
+```{r}
+# Plottear la geometría o el archivo .shp
+plot(mps)
+```
+
+```{r}
+# Realizar la unión (join) de una tabla con un shapefile
+# importar archvios shape (archivos tipo vector)
+shp <- st_read('./data/mpios_geo_ok.shp')
+shp
+```
+
+
+```{r}
+# Importar archivos en formato .csv (.xls)
+tbl <- read_csv('./data/produccion_cacao.csv')
+tbl
+```
+
+
+```{r}
+# Años disponible en archivo .csv
+yrs <- unique(tbl$PERIODO)
+yrs
+tbl <- tbl %>% # pipe (%>%) es un operador que permite encadenar funciones
+  filter(PERIODO == 2017) %>% 
+  mutate(MPIO = iconv(MPIO, to = 'latin1')) # transformación de variables en un data frame 
+```
+
+
+```{r}
+# Ver atributos de objetos
+str(tbl)
+str(shp)
+```
+
+
+```{r}
+# Transformación ID espacial
+shp <- shp %>% 
+  mutate(ID_ESPACIA = as.numeric(as.character(ID_ESPACIA)))
+str(shp)
+```
+
+
+```{r}
+# Realizar unión entre una table y un shapefile
+fnl <- inner_join(x = shp, y = tbl, by = c('ID_ESPACIA' = 'COD_MUNI'))
+fnl %>% 
+  dplyr::select(PRODUCCION) %>% 
+  plot() 
+```
+
+
+```{r warning=FALSE}
+# Exportar el nuevo archivo espacial con las nuevas características
+st_write(obj = fnl, dsn = './_shp', layer = 'producción_cacao', driver = 'ESRI shapefile')
+```
+
+
+# 3. Datos de ráster geográfico en R
+
+## Descripción de los datos empleados
+Los datos utilizados a lo largo de la sección 3 provienen de WorldClim-Global Data http://www.worldclim.org. Para esta sección empleamos datos climáticos para el año 2050 con una resolución de 10 minutos (tamaño de píxel de 20Km*20Km). El modelo climatico mediante el cual fueron construdios los datos es el modelo HadGEM2-CC bajo un escenario de alta probabilidad de ocurrencia. Para más información visitar https://portal.enes.org/models/earthsystem-models/metoffice-hadley-centre/hadgem2-es.
+
+
+## 3.1 Manipulación de archivos tipo ráster 
+
+
+```{r setup2}
+# Definir directorio de trabajo
+# en Windows sería algo a esto setwd("C:/Users/gusahu/Google Drive/Workshop_socher/Section_III")
+knitr::opts_knit$set(root.dir = '/Users/gusahu/Google Drive/Workshop_GIS_with_R/Section_III')
+```
+
+
+```{r}
+# Cargar librerias
+library(pacman)
+pacman::p_load(raster, rgdal, maptools)
+```
+
+
+```{r}
+# Limpiar ambiente de trabajo 
+g <- gc(reset = TRUE)
+rm(list = ls())
+options(scipen = 999)
+```
+
+
+```{r}
+# Importar archivo raster de precipitación del mes de mayo
+pr_mayo<- raster('./hg85pr50/hg85pr505.tif')
+plot(pr_mayo)
+```
+
+```{r}
+# Importar archivo raster de temperatura máxima del mes de mayo
+tx_mayo<- raster('./hg85tx50/hg85tx505.tif')
+plot(tx_mayo)
+```
+
+
+```{r}
+# Cargar capa de polígono
+{col<- readOGR('./shp_dpto/deptos_wgs84.shp') 
+# Cortar raster al área del polígono
+tx_mayo_col<- crop(tx_mayo,col)
+#Plotear raster 
+plot(tx_mayo_col, main = "Tmax. 2050 HadGEM CC RCP 8.5-Colombia (c*10)")
+plot(col, add=TRUE)}
+```
+
+
+## 3.2 Operaciones entre rásteres - cálculo Indice de Aridez de Martone (1926)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
