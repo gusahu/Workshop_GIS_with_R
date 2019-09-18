@@ -36,54 +36,41 @@ plot(col, add=TRUE)
 # 3.2 Operaciones entre rásteres - cálculo Indice de Aridez de Martone (1926)
 
 # Primer paso: cargar capas ráster
-
 # cargar raster por lotes
-grids<-list.files("./hg85tn50", pattern = ".tif", full.names = TRUE)
+grids<-list.files("./hg85tn50", pattern = ".tif", full.names = TRUE)  # temperatura mínima 
+grids2<-list.files("./hg85tx50", pattern = ".tif", full.names = TRUE) # temperatura máxima
+grids3<-list.files("./hg85pr50", pattern = ".tif", full.names = TRUE) # precipitación
 
-# crear raster stack temperatura mínima 
+# crear raster stack 
 tn_stack<- stack(grids)
-
-# temperatura minima promedio anual
-tn_promedio <- ((sum(tn_stack))/120)
-
-# calculo de la temperatura maxima promedio anual
-# cargar raster por lotes
-grids2<-list.files("./hg85tx50", pattern = ".tif", full.names = TRUE)
-
-# crear raster stack temperatura maxima 
 tx_stack<- stack(grids2)
-
-# temperatura maxima promedio anual
-tx_promedio <- ((sum(tx_stack))/120) 
-
-# calculo temperatura media anual
-tm_promedio <- mean(tn_promedio, tx_promedio)
-
-# calcular precipitación total anual
-# cargar raster por lotes
-grids3<-list.files("./hg85pr50", pattern = ".tif", full.names = TRUE)
-
-# crear raster stack precipitación total 
 pr_stack<- stack(grids3)
 
-# precipitación acumulada anual
-pr_total <- sum(pr_stack)
+# Segundo paso: operar rásteres
 
-#Cargar una capa de polígono
+tn_promedio <- ((sum(tn_stack))/120) # temperatura minima promedio anual
+tx_promedio <- ((sum(tx_stack))/120) # temperatura maxima promedio anual
+tm_promedio <- mean(tn_promedio, tx_promedio) # cáulo temperatura media anual
+pr_total <- sum(pr_stack) # precipitación acumulada anual
+
+
+# Tercer paso: cargar una capa vectorial de polígono
+
 col<- readOGR('./shp_dpto/deptos_wgs84.shp')
 
-# cortar raster al área del polígono
+# Cuarto paso: cortar raster al área del polígono
+
 pr_total_col<- crop(pr_total,col)
-plot(pr_total_col)
+plot(pr_total_col)  # plot precipitación anual acumulada
 
 tm_promedio_col<- crop(tm_promedio,col)
-plot(tm_promedio_col)
+plot(tm_promedio_col) # plot temperatura media anual
 
-# Índice de Aridez de Martonne año 2050
+# Quinto paso: calcular el Índice de Aridez de Martonne para el año 2050
 
 ind_a <- pr_total_col / (tm_promedio_col + 10) 
 plot(ind_a, main = "Índice de Aridez de Martonne año 2050-Colombia")
-plot(col, add=TRUE)
+plot(col, add=TRUE) # adicionar capa vectorial de polígono
 
 # exportar a *.tif
 writeRaster(ind_a, filename = "Ia_2050", format="GTiff", overwrite=TRUE)

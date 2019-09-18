@@ -261,17 +261,74 @@ plot(col, add=TRUE)}
 ```
 
 
-## 3.2 Operaciones entre rásteres - cálculo Indice de Aridez de Martone (1926)
+## 3.2 Operaciones entre rásteres - cálculo Indice de Aridez de Martonne (1926)
+
+En esta sub-sección vamos a realizar algunar operaciones entre archivos ráster, y a través de estas operaciones realizaremós el cálculo del índice de ridez de Martanne ($I_m=P/(T_m+10)$). Para tal fin, llevaremos a cabo un conjunto de operaciones puntuales.  
+
+Primer paso: cargar capas ráster.
+
+```{r}
+# cargar raster por lotes
+grids<-list.files("./hg85tn50", pattern = ".tif", full.names = TRUE)  # temperatura mínima 
+grids2<-list.files("./hg85tx50", pattern = ".tif", full.names = TRUE) # temperatura máxima
+grids3<-list.files("./hg85pr50", pattern = ".tif", full.names = TRUE) # precipitación
+```
+
+```{r}
+# crear raster stack 
+tn_stack<- stack(grids)
+tx_stack<- stack(grids2)
+pr_stack<- stack(grids3)
+```
 
 
+Segundo paso: operar rásteres
+
+```{r}
+tn_promedio <- ((sum(tn_stack))/120) # temperatura minima promedio anual
+tx_promedio <- ((sum(tx_stack))/120) # temperatura maxima promedio anual
+tm_promedio <- mean(tn_promedio, tx_promedio) # cáulo temperatura media anual
+pr_total <- sum(pr_stack) # precipitación acumulada anual
+```
 
 
+Tercer paso: cargar una capa vectorial de polígono
+
+```{r}
+col<- readOGR('./shp_dpto/deptos_wgs84.shp')
+```
 
 
+Cuarto paso: cortar raster al área del polígono
+
+```{r}
+pr_total_col<- crop(pr_total,col)
+plot(pr_total_col)  # plot precipitación anual acumulada
+```
 
 
+```{r}
+tm_promedio_col<- crop(tm_promedio,col)
+plot(tm_promedio_col) # plot temperatura media anual
+```
 
 
+Quinto paso: calcular Índice de Aridez de Martonne para el año 2050
+
+
+```{r}
+ind_a <- pr_total_col / (tm_promedio_col + 10) 
+plot(ind_a, main = "Índice de Aridez de Martonne año 2050-Colombia")
+plot(col, add=TRUE) # adicionar capa vectorial de polígono
+```
+
+
+Sexto paso: exportar a *.tif
+
+
+```{r}
+writeRaster(ind_a, filename = "Ia_2050", format="GTiff", overwrite=TRUE)
+```
 
 
 
