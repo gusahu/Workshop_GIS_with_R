@@ -72,6 +72,7 @@ ind_a <- pr_total_col / (tm_promedio_col + 10)
 plot(ind_a, main = "Índice de Aridez de Martonne año 2050-Colombia")
 plot(col, add=TRUE) # adicionar capa vectorial de polígono
 
-# exportar a *.tif
+# Sexto paso: exportar a *.tif
+
 writeRaster(ind_a, filename = "Ia_2050", format="GTiff", overwrite=TRUE)
 
