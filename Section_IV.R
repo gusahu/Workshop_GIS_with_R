@@ -30,7 +30,7 @@ plot(pr_col)
 # Procesando los datos
 dpt <- aggregate(mps, 'NOMBRE_DPT')
 gjr <- dpt[dpt@data$NOMBRE_DPT %in% "LA GUAJIRA",]
-ch <- dpt[dpt@data$NOMBRE_DPT %in% "CHOCO",]
+ch <- dpt[dpt@data$NOMBRE_DPT %in% "CHOCÓ",]
 
 pr_gjr <- raster::crop(pr_col, gjr) %>% 
   raster::mask(., gjr) %>% 
@@ -44,10 +44,10 @@ pr_ch <- raster::crop(pr_col, ch) %>%
   mutate(dpto = 'Choco')
 pr <- rbind(pr_gjr, pr_ch) 
 
-pr %>% filter(dpt == 'La Guajira') %>% pull(layer) %>% max()
-pr %>% filter(dpt == 'Chocó') %>% pull(layer) %>% max()
+pr %>% filter(dpto == 'La Guajira') %>% pull(layer) %>% max()
+pr %>% filter(dpto == 'Choco') %>% pull(layer) %>% max()
 
-map_grj <- ggplot(pr %>% filter(dpt == 'La Guajira'))  +
+map_grj <- ggplot(pr %>% filter(dpto == 'La Guajira'))  +
   geom_tile(aes(x = x, y =  y, fill = layer)) +
   scale_fill_gradientn(colours = RColorBrewer::brewer.pal(n = 8, name = "BuGn"), 
                        na.value = 'white', limits = c(0, 9700), breaks = seq(0, 9700, 2000)) +
@@ -57,7 +57,7 @@ map_grj <- ggplot(pr %>% filter(dpt == 'La Guajira'))  +
   coord_equal(xlim = extent(gjr)[1:2], ylim = extent(gjr)[3:4]) +
   labs(x = 'Longitud', y = 'Latitud', fill = 'Pr') +
   theme(legend.position = 'none')
-map_ch <- ggplot(pr %>% filter(dpt == 'Chocó'))  +
+map_ch <- ggplot(pr %>% filter(dpto == 'Chocó'))  +
   geom_tile(aes(x = x, y =  y, fill = layer)) +
   ggtitle('Chocó') +
   geom_polygon(data = dpt, aes(x=long, y = lat, group = group), color = 'grey', fill='NA') +
