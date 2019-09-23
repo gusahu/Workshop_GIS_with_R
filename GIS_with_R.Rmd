@@ -3,8 +3,8 @@ title: "Empleando R como Sistema de Información Geográfica (SIG)"
 author: "Gustavo Ahumada"
 date: "Sept 13, 2019"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 # 1. Representación simple de datos espaciales
