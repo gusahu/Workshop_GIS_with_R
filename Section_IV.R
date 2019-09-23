@@ -57,7 +57,7 @@ map_grj <- ggplot(pr %>% filter(dpto == 'La Guajira'))  +
   coord_equal(xlim = extent(gjr)[1:2], ylim = extent(gjr)[3:4]) +
   labs(x = 'Longitud', y = 'Latitud', fill = 'Pr') +
   theme(legend.position = 'none')
-map_ch <- ggplot(pr %>% filter(dpto == 'Chocó'))  +
+map_ch <- ggplot(pr %>% filter(dpto == 'Choco'))  +
   geom_tile(aes(x = x, y =  y, fill = layer)) +
   ggtitle('Chocó') +
   geom_polygon(data = dpt, aes(x=long, y = lat, group = group), color = 'grey', fill='NA') +
