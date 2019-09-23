@@ -6,12 +6,13 @@
 
 # Definir el directorio de trabajo
 # en Windows sería algo a esto setwd("C:/Users/gusahu/Google Drive/Workshop_socher/unit_2")
-setwd("/Users/gusahu/Google Drive/Workshop_socher/Make_maps/Raster_data")
+setwd("/Users/gusahu/Google Drive/Workshop_GIS_with_R/Section_IV/Raster_data")
 
 # Cargar librerias
 require(pacman)
 pacman::p_load(raster, rgdal, rgeos, stringr, tidyverse, RColorBrewer, ggpubr)
 
+g <- gc(reset = TRUE)
 rm(list = ls())
 options(scipen = 999)
 
@@ -35,18 +36,18 @@ pr_gjr <- raster::crop(pr_col, gjr) %>%
   raster::mask(., gjr) %>% 
   rasterToPoints() %>% 
   as_tibble() %>% 
-  mutate(dpto = 'La Guajira')
+  mutate(dpt = 'La Guajira')
 pr_ch <- raster::crop(pr_col, ch) %>% 
   raster::mask(., ch) %>% 
   rasterToPoints() %>% 
   as_tibble() %>% 
-  mutate(dpto = 'Chocó')
+  mutate(dpt = 'Chocó')
 pr <- rbind(pr_gjr, pr_ch) 
 
-pr %>% filter(dpto == 'La Guajira') %>% pull(layer) %>% max()
-pr %>% filter(dpto == 'Chocó') %>% pull(layer) %>% max()
+pr %>% filter(dpt == 'La Guajira') %>% pull(layer) %>% max()
+pr %>% filter(dpt == 'Chocó') %>% pull(layer) %>% max()
 
-map_grj <- ggplot(pr %>% filter(dpto == 'La Guajira'))  +
+map_grj <- ggplot(pr %>% filter(dpt == 'La Guajira'))  +
   geom_tile(aes(x = x, y =  y, fill = layer)) +
   scale_fill_gradientn(colours = RColorBrewer::brewer.pal(n = 8, name = "BuGn"), 
                        na.value = 'white', limits = c(0, 9700), breaks = seq(0, 9700, 2000)) +
@@ -56,7 +57,7 @@ map_grj <- ggplot(pr %>% filter(dpto == 'La Guajira'))  +
   coord_equal(xlim = extent(gjr)[1:2], ylim = extent(gjr)[3:4]) +
   labs(x = 'Longitud', y = 'Latitud', fill = 'Pr') +
   theme(legend.position = 'none')
-map_ch <- ggplot(pr %>% filter(dpto == 'Chocó'))  +
+map_ch <- ggplot(pr %>% filter(dpt == 'Chocó'))  +
   geom_tile(aes(x = x, y =  y, fill = layer)) +
   ggtitle('Chocó') +
   geom_polygon(data = dpt, aes(x=long, y = lat, group = group), color = 'grey', fill='NA') +

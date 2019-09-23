@@ -3,8 +3,8 @@ title: "Empleando R como Sistema de Información Geográfica (SIG)"
 author: "Gustavo Ahumada"
 date: "Sept 13, 2019"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 # 1. Representación simple de datos espaciales
@@ -274,6 +274,7 @@ grids2<-list.files("./hg85tx50", pattern = ".tif", full.names = TRUE) # temperat
 grids3<-list.files("./hg85pr50", pattern = ".tif", full.names = TRUE) # precipitación
 ```
 
+
 ```{r}
 # crear raster stack 
 tn_stack<- stack(grids)
@@ -329,6 +330,125 @@ Sexto paso: exportar a *.tif
 ```{r}
 writeRaster(ind_a, filename = "Ia_2050", format="GTiff", overwrite=TRUE)
 ```
+
+
+
+# 4. Haciendo mapas con R: desde mapas estáticos hasta mpas dinámicos
+
+# 4.1. Mapas estáticos en R
+
+# 4.1.1. Haciendo mapas estáticos empleando datos tipo raster
+
+```{r setup3}
+# Definir directorio de trabajo
+# en Windows sería algo a esto setwd("C:/Users/gusahu/Google Drive/Workshop_socher/Section_IV")
+knitr::opts_knit$set(root.dir = '/Users/gusahu/Google Drive/Workshop_GIS_with_R/Section_IV/Raster_data')
+```
+
+
+```{r}
+# Cargar librerias
+require(pacman)
+pacman::p_load(raster, rgdal, rgeos, stringr, tidyverse, RColorBrewer, ggpubr)
+```
+
+
+```{r}
+# Limpiar ambiente de trabajo 
+g <- gc(reset = TRUE)
+rm(list = ls())
+options(scipen = 999)
+```
+
+
+```{r}
+# Cargar datos de precipitación y shapefile de municipios
+# Precipitación acumulada anual
+grids<-list.files("./hg85pr50_5", pattern = ".tif", full.names = TRUE)
+pr_stack<- stack(grids)
+pr_total <- sum(pr_stack)
+mps <- shapefile('./mpiosColombia/mpios_geo_ok.shp')
+```
+
+
+```{r}
+# cortar raster al área del polígono
+pr_col<- crop(pr_total,mps)
+plot(pr_col)
+```
+
+
+```{r}
+# Procesando los datos
+dpt<- readOGR('./shp_dpto/deptos_wgs84.shp')
+#dpt <- aggregate(mps, 'NOMBRE_DPT')
+gjr <- dpt[dpt@data$NOMBRE_DPT %in% "LA GUAJIRA",]
+ch <- dpt[dpt@data$NOMBRE_DPT %in% "CHOCO",]
+```
+
+
+```{r}
+pr_gjr <- raster::crop(pr_col, gjr) %>% 
+  raster::mask(., gjr) %>% 
+  rasterToPoints() %>% 
+  as_tibble() %>% 
+  mutate(dpt = 'La Guajira')
+pr_ch <- raster::crop(pr_col, ch) %>% 
+  raster::mask(., ch) %>% 
+  rasterToPoints() %>% 
+  as_tibble() %>% 
+  mutate(dpt = 'Chocó')
+pr <- rbind(pr_gjr, pr_ch) 
+```
+
+
+```{r}
+pr %>% filter(dpt == 'La Guajira') %>% pull(layer) %>% max()
+pr %>% filter(dpt == 'Chocó') %>% pull(layer) %>% max()
+```
+
+
+```{r}
+map_grj <- ggplot(pr %>% filter(dpt == 'La Guajira'))  +
+  geom_tile(aes(x = x, y =  y, fill = layer)) +
+  scale_fill_gradientn(colours = RColorBrewer::brewer.pal(n = 8, name = "BuGn"), 
+                       na.value = 'white', limits = c(0, 9700), breaks = seq(0, 9700, 2000)) +
+  geom_polygon(data = dpt, aes(x=long, y = lat, group = group), color = 'grey', fill='NA') +
+  ggtitle('La Guajira') +
+  theme_bw() +
+  coord_equal(xlim = extent(gjr)[1:2], ylim = extent(gjr)[3:4]) +
+  labs(x = 'Longitud', y = 'Latitud', fill = 'Pr') +
+  theme(legend.position = 'none')
+```
+
+
+```{r}
+map_ch <- ggplot(pr %>% filter(dpt == 'Chocó'))  +
+  geom_tile(aes(x = x, y =  y, fill = layer)) +
+  ggtitle('Chocó') +
+  geom_polygon(data = dpt, aes(x=long, y = lat, group = group), color = 'grey', fill='NA') +
+  scale_fill_gradientn(colours = RColorBrewer::brewer.pal(n = 8, name = "BuGn"), 
+                       na.value = 'white', limits = c(0, 9700), breaks = seq(0, 9700, 2000)) +
+  theme_bw() +
+  coord_equal(xlim = extent(ch)[1:2], ylim = extent(ch)[3:4]) +
+  labs(x = 'Longitud', y = 'Latitud', fill = 'Prec') +
+  theme(legend.position = 'right')
+```
+
+
+```{r}
+maps2 <- gridExtra::grid.arrange(map_grj, map_ch, ncol = 2)
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
