@@ -441,15 +441,92 @@ maps2 <- gridExtra::grid.arrange(map_grj, map_ch, ncol = 2)
 ```
 
 
+```{r}
+ggsave(plot = maps2, filename = './mapa_prec2.png', width = 12, height = 9, units = 'in', dpi = 300)
+```
 
 
 
+# 4.1.2. Haciendo mapas estáticos empleando datos tipo vector
+
+```{r setup4}
+# Definir directorio de trabajo
+# en Windows sería algo a esto setwd("C:/Users/gusahu/Google Drive/Workshop_socher/Section_IV")
+knitr::opts_knit$set(root.dir = '/Users/gusahu/Google Drive/Workshop_GIS_with_R/Section_IV/Vector_data')
+```
 
 
+```{r}
+# Limpiar ambiente de trabajo 
+g <- gc(reset = TRUE)
+rm(list = ls())
+options(scipen = 999)
+```
 
 
+```{r}
+# Cargar librerias
+library(pacman)
+pacman::p_load(raster, rgdal, rgeos, tidyverse, stringr, sf, broom)
+```
 
 
+```{r}
+shp <- shapefile('./meanTemp/mean_temp.shp')
+#shp@data$MEAN
+#shp@data$NOM_MUNICI
+#shp@data$NOMBRE_DPT
+dpto <- unique(shp@data$NOMBRE_DPT)
+```
+
+
+```{r  warning=FALSE}
+# convertir shapefile en una tabla
+tdy <- broom::tidy(shp, 'ID_ESPACIA')
+dfm <- tibble(id_espacial = shp@data$ID_ESPACIA, mpio = shp@data$NOM_MUNICI, temp = shp@data$MEAN)
+dfm <- inner_join(tdy, dfm, by = c('id' = 'id_espacial'))
+```
+
+
+```{r}
+# importaar archivos .rds
+pnm <- readRDS(file = "gadm36_PAN_0_sp.rds")
+ecu <- readRDS(file = "gadm36_ECU_0_sp.rds")
+ven <- readRDS(file = "gadm36_VEN_0_sp.rds")
+per <- readRDS(file = "gadm36_PER_0_sp.rds")
+bra <- readRDS(file = "gadm36_BRA_0_sp.rds")
+```
+
+
+```{r}
+pnm <- broom::tidy(pnm, 'NAME_0')
+ecu <- broom::tidy(ecu, 'NAME_0')
+ven <- broom::tidy(ven, 'NAME_0')
+per <- broom::tidy(per, 'NAME_0')
+bra <- broom::tidy(bra, 'NAME_0')
+```
+
+
+```{r}
+# Mapa temperatura promedio en colombia año 2015 
+map <- ggplot()+
+  geom_polygon(data = dfm, aes(x = long, y = lat, group = id, fill = temp), colour = 'grey') +
+  scale_fill_distiller(palette = 'RdYlGn') +
+  geom_polygon(data = pnm, aes(x = long, y = lat, group = group), fill = NA, colour = 'grey')+
+  geom_polygon(data = ecu, aes(x = long, y = lat, group = group), fill = NA, colour = 'grey')+
+  geom_polygon(data = ven, aes(x = long, y = lat, group = group), fill = NA, colour = 'grey')+
+  geom_polygon(data = per, aes(x = long, y = lat, group = group), fill = NA, colour = 'grey')+
+  geom_polygon(data = bra, aes(x = long, y = lat, group = group), fill = NA, colour = 'grey')+
+  coord_equal(xlim = c(-80, -66), ylim = c(-4.22, 13)) +
+  xlab('Longitud') +
+  ylab('Latitud') +
+  labs(fill = 'Temperatura (c)') +
+  theme(legend.justification = c(0,0),
+        legend.position = c(0.005, 0.005),
+        legend.background = element_rect(fill = alpha('white', 1), colour = alpha('white', 0.4)))
+ggsave(plot = map, filename = 'mapa_temp.png', units = 'in', width = 6, height = 7.5, dpi = 300)
+map
+```
 
 
 

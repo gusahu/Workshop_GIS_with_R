@@ -73,11 +73,11 @@ maps2 <- gridExtra::grid.arrange(map_grj, map_ch, ncol = 2)
 ggsave(plot = maps2, filename = './mapa_prec2.png', width = 12, height = 9, units = 'in', dpi = 300)
 
 
-# 4.2 Haciendo mapas empleando datos tipo vector#
+# 4.1.2. Haciendo mapas empleando datos tipo vector#
 
 # Definir el directorio de trabajo
 # en Windows sería algo a esto setwd("C:/Users/gusahu/Google Drive/Workshop_socher/unit_2")
-setwd("/Users/gusahu/Google Drive/Workshop_socher/Make_maps/Vector_data")
+setwd("/Users/gusahu/Google Drive/Workshop_GIS_with_R/Section_IV/Vector_data")
 
 # eliminar objetos del espacio de trabajo
 g <- gc(reset = TRUE)
