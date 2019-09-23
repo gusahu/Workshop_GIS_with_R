@@ -30,18 +30,18 @@ plot(pr_col)
 # Procesando los datos
 dpt <- aggregate(mps, 'NOMBRE_DPT')
 gjr <- dpt[dpt@data$NOMBRE_DPT %in% "LA GUAJIRA",]
-ch <- dpt[dpt@data$NOMBRE_DPT %in% "CHOCÓ",]
+ch <- dpt[dpt@data$NOMBRE_DPT %in% "CHOCO",]
 
 pr_gjr <- raster::crop(pr_col, gjr) %>% 
   raster::mask(., gjr) %>% 
   rasterToPoints() %>% 
   as_tibble() %>% 
-  mutate(dpt = 'La Guajira')
+  mutate(dpto = 'La Guajira')
 pr_ch <- raster::crop(pr_col, ch) %>% 
   raster::mask(., ch) %>% 
   rasterToPoints() %>% 
   as_tibble() %>% 
-  mutate(dpt = 'Chocó')
+  mutate(dpto = 'Choco')
 pr <- rbind(pr_gjr, pr_ch) 
 
 pr %>% filter(dpt == 'La Guajira') %>% pull(layer) %>% max()
