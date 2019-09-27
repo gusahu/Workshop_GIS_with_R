@@ -1,7 +1,8 @@
 # Load the leaflet library
-install.packages("leaflet")
+#install.packages("leaflet")
 library(leaflet)
 library("tidyverse")
+library("dplyr")
 
 # Create a leaflet map with default map tile using addTiles()
 leaflet() %>%
@@ -40,9 +41,16 @@ leaflet()  %>%
   setView(lng = -75.5144424, lat = 10.3997202,  zoom = 18)
 
 # Map with CartoDB.PositronNoLabels tile centered on DataCamp's Belgium office with zoom of 4
+dc_hq <- 
+  tibble(
+    hq  = c("DataCamp - NYC","DataCamp -Belgium"),
+    lon = c(-73.98575, 4.717863),
+    lat = c(40.74856, 50.881363))
+
+
 leaflet() %>% 
   addProviderTiles("CartoDB.PositronNoLabels") %>% 
-  setView(lng = dc_hq$lon[2], lat = dc_hq$lat[2], zoom = 4) 
+  setView(lng = dc_hq$lon[2], lat = dc_hq$lat[2], zoom = 8) 
 
 # A map with a narrowerview
 leaflet(options = 
@@ -50,11 +58,6 @@ leaflet(options =
   addProviderTiles("CartoDB")  %>% 
   setView(lng = -75.5144475, lat = 10.3997856, zoom = 12) 
 
-dc_hq <- 
-  tibble(
-    hq  = c("DataCamp - NYC","DataCamp -Belgium"),
-    lon = c(-73.98575, 4.717863),
-    lat = c(40.74856, 50.881363))
 
 leaflet(options = leafletOptions(
   # Set minZoom and dragging 
@@ -108,12 +111,39 @@ map_zoom
 
 
 
+# Another code
+
+# Insert your latitude and longitude in the code below
+# NOTE: Don't get them reversed otherwise you'll end up in the South Pole.
+
+# Initialize and assign m as the leaflet object
+m <- leaflet() %>%
+  # Now add tiles to it
+  addTiles() %>%  
+  # Setting the middle of where the map should be and the zoom level
+  setView(lng=-75.528316, lat=10.415571, zoom = 16) %>%
+  # Now, add a marker with a popup, 
+  addMarkers(lng=-75.528316, lat=10.415571, popup="<b>Hola</b><br><a href='https://www.cccaribeplaza.com'>-Soy Yo</a>")
+
+m
+
+
+library(raster)
 
 
 
+library(htmltools)
 
+df <- read.csv(textConnection(
+  "Name,Lat,Long
+Mall Plaza Cartagena,10.425178,	-75.5403718
+Centro Comercial Caribe Plaza,	10.415853,	-75.528332
+Plaza Boca Grande,	10.411435,	-75.551184
+Centro Comercial La Plazuela,	10.390677,	-75.479419 "
+))
 
-
+leaflet(df) %>% addTiles() %>%
+  addMarkers(~Long, ~Lat, popup = ~htmlEscape(Name))
 
 
 

@@ -3,8 +3,8 @@ title: "Empleando R como Sistema de Información Geográfica (SIG)"
 author: "Gustavo Ahumada"
 date: "Sept 13, 2019"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 # 1. Representación simple de datos espaciales
@@ -528,6 +528,121 @@ ggsave(plot = map, filename = 'mapa_temp.png', units = 'in', width = 6, height =
 map
 ```
 
+
+# 4.2. Haciendo mapas interactivos
+
+
+```{r setup5}
+# Definir directorio de trabajo
+# en Windows sería algo a esto setwd("C:/Users/gusahu/Google Drive/Workshop_socher/Section_IV")
+knitr::opts_knit$set(root.dir = '/Users/gusahu/Google Drive/Workshop_GIS_with_R/Section_IV')
+```
+
+
+```{r}
+# Cargar librerias
+library(pacman)
+pacman::p_load(leaflet, raster, rgdal, maptools,tidyverse,dplyr,htmltools)
+```
+
+
+```{r}
+# Limpiar ambiente de trabajo 
+g <- gc(reset = TRUE)
+rm(list = ls())
+options(scipen = 999)
+```
+
+
+```{r}
+# Crear un mapa con leaflet empleando addTittle()
+leaflet() %>%
+  addTiles()
+```
+
+
+```{r}
+# Cambiar el capaempleando addProviderTiles() y estableciendo el argumento "CartoDB"
+leaflet() %>% 
+  addProviderTiles(provider = "CartoDB")
+```
+
+
+```{r}
+# Crear un mapa que emplee como proveedor de capas Esri
+leaflet() %>% 
+  addProviderTiles("Esri")
+```
+
+
+```{r}
+# Mapa con argumento CartoDB  para un lugar en Cartagena, Colombia
+leaflet()  %>% 
+  addProviderTiles("CartoDB")  %>% 
+  setView(lng = -75.5144424, lat = 10.3997202,  zoom= 12)
+```
+
+
+```{r}
+# Mapa con marcas de localización expresadas en latitud/longitud
+# generar vector de cordenadas
+dc_hq <- 
+  tibble(
+    hq  = c("Plaza de San Diego -CTG","Iglesia San Pedro de Claver -CTG"),
+    lng = c(-75.547388,-75.551007),
+    lat = c(10.428467,10.4220))
+```
+
+
+```{r}
+# Mapa base
+leaflet() %>% 
+  addTiles() %>% 
+  setView(lng = dc_hq$lng[2], lat = dc_hq$lat[2], zoom = 15)
+```
+
+
+```{r}
+# Adicionar al mapa  punto referenciado mediante su coordenada
+leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(lng = dc_hq$lng[1], lat = dc_hq$lat[1])
+```
+
+
+```{r}
+# Adicionar otro  punto al mapa 
+leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(lng = dc_hq$lng, lat = dc_hq$lat)
+```
+
+
+```{r}
+# Mi ubicación
+yo <- leaflet() %>%
+  addTiles() %>%  
+  # Setting the middle of where the map should be and the zoom level
+  setView(lng=-75.549766, lat=10.425901, zoom = 16) %>%
+  # Now, add a marker with a popup, 
+  addMarkers(lng=-75.549766, lat=10.425901, popup="<b>Hola</b><br><a href='https://www.unicartagena.edu.co/'>-Aquí estoy</a>")
+yo
+```
+
+
+```{r}
+# Establecer una red de centros comerciales
+mall <- read.csv(textConnection(
+  "Name,Lat,Long
+Mall Plaza Cartagena,10.425178,	-75.5403718
+Centro Comercial Caribe Plaza,	10.415853,	-75.528332
+Plaza Boca Grande,	10.411435,	-75.551184
+Centro Comercial La Plazuela,	10.390677,	-75.479419 "
+))
+
+leaflet(mall) %>% addTiles() %>%
+  addMarkers(~Long, ~Lat, popup = ~htmlEscape(Name))
+```
 
 
 
