@@ -8,11 +8,7 @@ output:
 ---
 
 
-Este workshop busca proveer un conocimiento básico con varios aspectos de los sistemas de información geográfica (SIG), de tal manera que se entiendan el rango de los potenciales usos de los SIG en el trabajo aplicado y establecer bases adecuadas para incentivar estos. Por lo tanto, los objetivos de este workshop son:
-- 	Proveer un entendimiento de las habilidades básicas necesarias para trabajar con SIG, principalmente empleado el software estadístico R.
-- 	Enseñar ciertas técnicas de visualización de datos espaciales para la producción de mapas y otro tipo información geográfica.
--  Proveer las herramientas necesarias para manejar, analizar y visualizar SIG.
--  Proveer una introducción a las preguntas de interés para el análisis de datos espaciales.
+Este workshop busca proveer un conocimiento básico con varios aspectos de los sistemas de información geográfica (SIG), de tal manera que se entiendan el rango de los potenciales usos de los SIG en el trabajo aplicado y establecer bases adecuadas para incentivar estos. 
 
 
 # 1. Representación simple de datos espaciales
@@ -121,7 +117,7 @@ plot(pols, border='blue', lwd=2, add=TRUE)}
 ```
 
 
-# 2. Manipulación de datos tipo vectores en R
+# 2. Manipulación de datos tipo vector en R
 
 
 ```{r setup}
@@ -646,6 +642,8 @@ leaflet(mall) %>% addTiles() %>%
   addMarkers(~Long, ~Lat, popup = ~htmlEscape(Name))
 mall
 ```
+
+
 
 
 
