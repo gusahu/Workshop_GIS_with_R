@@ -1,17 +1,25 @@
 ---
 title: "Empleando R como Sistema de Información Geográfica (SIG)"
 author: "Gustavo Ahumada"
-date: "Sept 13, 2019"
+date: "Sept 30, 2019"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
+
+
+Este workshop busca proveer un conocimiento básico con varios aspectos de los sistemas de información geográfica (SIG), de tal manera que se entiendan el rango de los potenciales usos de los SIG en el trabajo aplicado y establecer bases adecuadas para incentivar estos. Por lo tanto, los objetivos de este workshop son:
+- 	Proveer un entendimiento de las habilidades básicas necesarias para trabajar con SIG, principalmente empleado el software estadístico R.
+- 	Enseñar ciertas técnicas de visualización de datos espaciales para la producción de mapas y otro tipo información geográfica.
+-  Proveer las herramientas necesarias para manejar, analizar y visualizar SIG.
+-  Proveer una introducción a las preguntas de interés para el análisis de datos espaciales.
+
 
 # 1. Representación simple de datos espaciales
 
 Los objetos espaciales usualmente son representados por datos tipo vector. Tales tipos de datos consisten en la geometría o la forma de los objetos. Por ejemplo, un conjunto de datos vector que contienen el limite de los paises del mundo (geometría) y también contienen su respectivo tamaño poblacional para el año 2010. Por otra parte, se tienen los datos espaciales continuos, los cuales son frecuentemente representados con datos tipo raster. A continuación se representante este tipo de datos utilizando R. Parte del codigo que será utilizado en esta sección está disponible en https://rspatial.org/spatial/index.html.
 
-## 1.1. Datos tipo vector
+## 1.1  Datos tipo vector
 
 
 ```{r}
@@ -37,28 +45,26 @@ precip <-round((runif(length(latitud))*10)^3)
 
 ```{r}
 nivel_precip <- 1 + precip/500
-{plot(est_climatic, cex=nivel_precip, pch=20, col='blue', main='Precitación por estaciones')
+{plot(est_climatic, cex=nivel_precip, pch=20, col='red', main='Precitación por estaciones')
 # Adicionar etiquetas
 text.default(est_climatic, nombre, pos = 4)
 # Adicionar leyenda
 breaks <- c(100, 250, 500, 1000)
 legend.psize <- 1+breaks/500 
-legend("topright", legend=breaks, pch=20, pt.cex=legend.psize, col='blue', bg='gray')}
+legend("topright", legend=breaks, pch=20, pt.cex=legend.psize, col='red', bg='gray')}
 ```
 
 
 ```{r}
-# Adicionar puntos, lineas y polígonos al plot.
-{longitud <- c(-116.7, -120.4, -116.7, -113.5, -115.5,
-              -120.8, -119.5, -113.7, -113.7, -110.7)
-latitud <- c(45.3, 42.6, 38.9, 42.1, 35.7, 38.9,
-             36.2, 39, 41.6, 36.9)
-x <- cbind(longitud, latitud)
-plot(est_climatic, main='Precipitación por estaciones')
+# Adicionar lineas y polígonos al plot
+longitud2 <- c(-116.8, -114.2, -112.9, -111.9, -114.2, -115.4, -117.7)
+latitud2 <- c(41.3, 42.9, 42.4, 39.8, 37.6, 38.3, 37.6)
+x <- cbind(longitud2, latitud2)
+{plot(est_climatic, main='Precipitación')
 polygon(x, col='blue', border='light blue')
 lines(est_climatic, lwd=3, col='red')
 points(x, cex=2, pch=20)
-points(est_climatic, cex=nivel_precip, pch=20, col='red', main='Precipitation by station')}
+points(est_climatic, cex=nivel_precip, pch=20, col='red', main='Precipitación')}
 ```
 
 
@@ -69,11 +75,11 @@ tabla
 ```
 
 
-## 1.2. Datos tipo raster
+## 1.2  Datos tipo raster
 
 
 ```{r}
-# Crear esqueleto de una base de datos raster
+# Crear un RasterLayer desde cero
 rast <- raster(ncol=10, nrow=10, xmx=-80, xmn=-150, ymn=20, ymx=60)
 rast
 ```
@@ -87,7 +93,7 @@ rast
 
 
 ```{r}
-# Asignar el número de celdas 
+# Asignar el número de celdas(en este caso sobrescribir los valores previos) 
 values(rast) <- 1:ncell(rast)
 rast
 plot(rast)
@@ -95,9 +101,8 @@ plot(rast)
 
 
 ```{r}
-# Crear un esqueleto de una base de datos raster
+# Adicionar puntos y poígonos
 {rast <- raster(ncol=10, nrow=10, xmx=-80, xmn=-150, ymn=20, ymx=60)
-rast
 # Asignar valores a objetos tipo raster
 values(rast) <- runif(ncell(rast))
 rast
@@ -116,7 +121,7 @@ plot(pols, border='blue', lwd=2, add=TRUE)}
 ```
 
 
-# 2. Datos de vectores geográficos en R
+# 2. Manipulación de datos tipo vectores en R
 
 
 ```{r setup}
@@ -202,13 +207,13 @@ fnl %>%
 
 ```{r warning=FALSE}
 # Exportar el nuevo archivo espacial con las nuevas características
-st_write(obj = fnl, dsn = './_shp', layer = 'producción_cacao', driver = 'ESRI shapefile')
+st_write(obj = fnl, dsn = './_shp', layer = 'producción_cacao', driver = 'ESRI shapefile', update = TRUE)
 ```
 
 
-# 3. Datos de ráster geográfico en R
+# 3. Manipulación de datos tipo ráster en  R
 
-## Descripción de los datos empleados
+### Descripción de los datos empleados
 Los datos utilizados a lo largo de la sección 3 provienen de WorldClim-Global Data http://www.worldclim.org. Para esta sección empleamos datos climáticos para el año 2050 con una resolución de 10 minutos (tamaño de píxel de 20Km*20Km). El modelo climatico mediante el cual fueron construdios los datos es el modelo HadGEM2-CC bajo un escenario de alta probabilidad de ocurrencia. Para más información visitar https://portal.enes.org/models/earthsystem-models/metoffice-hadley-centre/hadgem2-es.
 
 
@@ -255,7 +260,7 @@ plot(tx_mayo)
 {col<- readOGR('./shp_dpto/deptos_wgs84.shp') 
 # Cortar raster al área del polígono
 tx_mayo_col<- crop(tx_mayo,col)
-#Plotear raster 
+# Plotear raster 
 plot(tx_mayo_col, main = "Tmax. 2050 HadGEM CC RCP 8.5-Colombia (c*10)")
 plot(col, add=TRUE)}
 ```
@@ -316,7 +321,6 @@ plot(tm_promedio_col) # plot temperatura media anual
 
 Quinto paso: calcular Índice de Aridez de Martonne para el año 2050
 
-
 ```{r}
 ind_a <- pr_total_col / (tm_promedio_col + 10) 
 plot(ind_a, main = "Índice de Aridez de Martonne año 2050-Colombia")
@@ -326,18 +330,16 @@ plot(col, add=TRUE) # adicionar capa vectorial de polígono
 
 Sexto paso: exportar a *.tif
 
-
 ```{r}
 writeRaster(ind_a, filename = "Ia_2050", format="GTiff", overwrite=TRUE)
 ```
 
 
+# 4. Haciendo mapas con R: desde mapas estáticos hasta mpas interactivos
 
-# 4. Haciendo mapas con R: desde mapas estáticos hasta mpas dinámicos
+## 4.1  Mapas estáticos en R
 
-# 4.1. Mapas estáticos en R
-
-# 4.1.1. Haciendo mapas estáticos empleando datos tipo raster
+### 4.1.1  Haciendo mapas estáticos empleando datos tipo raster
 
 ```{r setup3}
 # Definir directorio de trabajo
@@ -446,8 +448,7 @@ ggsave(plot = maps2, filename = './mapa_prec2.png', width = 12, height = 9, unit
 ```
 
 
-
-# 4.1.2. Haciendo mapas estáticos empleando datos tipo vector
+### 4.1.2  Haciendo mapas estáticos empleando datos tipo vector
 
 ```{r setup4}
 # Definir directorio de trabajo
@@ -529,7 +530,8 @@ map
 ```
 
 
-# 4.2. Haciendo mapas interactivos
+## 4.2  Haciendo mapas interactivos
+Emplearemos el package Leaflet para crear mapas interactivos. Esencialmente, este package nos permitirá hacer mapas con mosaicos de mapas personalizados, marcadores, polígonos, lineas ventanas emergentes.Hay un  excelente mterial para profundizar en la funcionalidad del package Leaflet despues de de esta introducción en https://campus.datacamp.com/courses/interactive-maps-with-leaflet-in-r/setting-up-interactive-web-maps?ex=1.
 
 
 ```{r setup5}
@@ -584,13 +586,25 @@ leaflet()  %>%
 
 
 ```{r}
+# Mi ubicación
+yo <- leaflet() %>%
+  addTiles() %>%  
+  # Setting the middle of where the map should be and the zoom level
+  setView(lng=-75.549766, lat=10.425901, zoom = 16) %>%
+  # Now, add a marker with a popup, 
+  addMarkers(lng=-75.549766, lat=10.425901, popup="<b>Hola</b><br><a href='https://www.unicartagena.edu.co/'>-Aquí estoy</a>")
+yo
+```
+
+
+```{r}
 # Mapa con marcas de localización expresadas en latitud/longitud
 # generar vector de cordenadas
 dc_hq <- 
   tibble(
     hq  = c("Plaza de San Diego -CTG","Iglesia San Pedro de Claver -CTG"),
-    lng = c(-75.547388,-75.551007),
-    lat = c(10.428467,10.4220))
+    lng = c(-75.547388,-75.545399),
+    lat = c(10.428467,10.420542))
 ```
 
 
@@ -606,7 +620,7 @@ leaflet() %>%
 # Adicionar al mapa  punto referenciado mediante su coordenada
 leaflet() %>% 
   addTiles() %>% 
-  addMarkers(lng = dc_hq$lng[1], lat = dc_hq$lat[1])
+  addMarkers(lng = dc_hq$lng[1], lat = dc_hq$lat[1], popup="<b></b><br><a href='https://donde.co/es/cartagena/articulos/plaza-san-diego-28691'>Plaza de San Diego</a>" )
 ```
 
 
@@ -614,24 +628,12 @@ leaflet() %>%
 # Adicionar otro  punto al mapa 
 leaflet() %>% 
   addTiles() %>% 
-  addMarkers(lng = dc_hq$lng, lat = dc_hq$lat)
+  addMarkers(lng = dc_hq$lng, lat = dc_hq$lat, popup="<b></b><br><a href='https://donde.co/es/cartagena/articulos/getsemani-el-barrio-cool-del-mundo'>Plaza de Getsemani</a>" )
 ```
 
 
 ```{r}
-# Mi ubicación
-yo <- leaflet() %>%
-  addTiles() %>%  
-  # Setting the middle of where the map should be and the zoom level
-  setView(lng=-75.549766, lat=10.425901, zoom = 16) %>%
-  # Now, add a marker with a popup, 
-  addMarkers(lng=-75.549766, lat=10.425901, popup="<b>Hola</b><br><a href='https://www.unicartagena.edu.co/'>-Aquí estoy</a>")
-yo
-```
-
-
-```{r}
-# Establecer una red de centros comerciales
+# Localizar  centros comerciales con disponibilidad de salas de cine
 mall <- read.csv(textConnection(
   "Name,Lat,Long
 Mall Plaza Cartagena,10.425178,	-75.5403718
@@ -642,6 +644,7 @@ Centro Comercial La Plazuela,	10.390677,	-75.479419 "
 
 leaflet(mall) %>% addTiles() %>%
   addMarkers(~Long, ~Lat, popup = ~htmlEscape(Name))
+mall
 ```
 
 
