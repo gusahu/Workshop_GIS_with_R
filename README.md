@@ -39,4 +39,15 @@ Este workshop busca proveer un conocimiento a nivel básico con varios aspectos 
 *	Creación de mapas interactivos
 
 
+## Referencias sugeridas
+
+1. Brunsdon, C., & Comber, L. (2015). An Introduction to R for Spatial Analysis and Mapping. London: SAGE Publications Inc.
+2. Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC. https://geocompr.robinlovelace.net.
+3. Mas, J.-F. (2018). Análisis espacial con R: Usa R como Sistema de Información Geográfica. Kocani: European Scientic Institute.
+4. Moraga, P. (2019). Geospatial Health Data: Modeling and Visualization with R-INLA and Shiny. Chapman and Hall/CRC. https://paula-moraga.github.io/book-geospatial/.
+5. Pebesma, E., & Bivand, R. (2019). Spatial Data Science. https://keen-swartz-3146c4.netlify.com.
+6. Thorn, C. (2016). The R Primer. London: CRC Press, Taylor & Francis Group.
+7. Wickham, H. (2019). Advance R. Chapman and Hall/CRC. https://adv-r.hadley.nz.
+8. Wickham, H. (2019). ggplot2: Elegant Graphics for Data Analysis. https://ggplot2-book.org.
+
 
