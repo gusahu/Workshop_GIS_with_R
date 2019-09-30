@@ -1,4 +1,4 @@
-##  Empleando R como Sistema de Información Geográfica (SIG)
+#  Empleando R como Sistema de Información Geográfica (SIG)
 
 #### Instructor: Gustavo Ahumada, Magíster en Economía Aplicada
 
