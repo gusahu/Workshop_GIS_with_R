@@ -1,7 +1,7 @@
 ---
 title: "Empleando R como Sistema de Información Geográfica (SIG)"
 author: "Gustavo Ahumada"
-date: "Sept 30, 2019"
+date: "Octuber 25, 2019"
 output:
   html_document: default
   pdf_document: default
